@@ -1,11 +1,19 @@
 import pytest
-from app import hash_password, get_user, create_user  # Usunięto duplikat importu
+from app.database import create_user, get_user
+from app.bank_app import hash_password
 
 @pytest.fixture
 def test_user():
-    create_user("test_user", hash_password("test123"))  # Poprawiona składnia
-    yield
-    # Czyszczenie zostanie dodane później
+    
+    user = create_user("test_user", hash_password("test123"))
+    yield user  # Возвращаем созданного пользователя
+
+
+def test_user_creation(test_user):  # Фикстура передается как параметр
+
+    user = get_user("test_user")
+    assert user is not None
+    assert user['username'] == 'test_user'
 
 def test_password_hashing():
     """Testuje poprawność haszowania haseł"""
@@ -13,8 +21,3 @@ def test_password_hashing():
     assert len(hashed) == 60  # Długość hasha bcrypt
     assert hash_password("test123") != hashed  # Unikalna sól
 
-def test_user_creation(test_user):
-    """Testuje tworzenie użytkownika"""
-    user = get_user("test_user")
-    assert user is not None
-    assert user['username'] == 'test_user'
